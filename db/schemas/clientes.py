@@ -1,12 +1,24 @@
-def clientes_esquema(clientes) -> dict:
-    return {
-        "id": clientes["id"],
-        "cedula": clientes["cedula"],
-        "nombre": clientes["nombre"],
-        "apellido": clientes["apellido"],
-        "ciudad": clientes["ciudad"],
-        "correo": clientes["correo"],
-        "direccion": clientes["direccion"],
-        "telefono": clientes["telefono"],
-        "fecha_nacimiento":clientes["fecha_nacimiento"]
-    }
+from pydantic import BaseModel
+from typing import Optional
+
+class ObtenerClientes(BaseModel):
+    id: Optional[int] = None
+    cedula: str
+    nombre: str
+    apellido: str 
+    ciudad: str 
+    correo: str 
+    direccion: str 
+    telefono: str 
+    fecha_nacimiento : str
+
+    class Config:
+        from_attributes = True
+
+class ActualizarClientes(BaseModel):
+    nombre: str
+    apellido: str 
+    ciudad: str 
+    direccion: str 
+    telefono: str 
+    fecha_nacimiento : str

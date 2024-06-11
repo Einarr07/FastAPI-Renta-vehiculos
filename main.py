@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from db.conexion import Base, engine, session_local
 from starlette.responses import RedirectResponse
 from routes import clientes
+
 # Crear todas las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 

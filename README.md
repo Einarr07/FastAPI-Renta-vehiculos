@@ -1,4 +1,4 @@
-# CRUD sencillo con FastAPI y MySQL
+# Renta de vehiculos con FastAPI y MySQL
 
 ## Crear un entorno virtual
 
