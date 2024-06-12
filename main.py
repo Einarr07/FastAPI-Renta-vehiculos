@@ -7,7 +7,7 @@ from routes import clientes
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    responses = {404: {"Mensaje": "No encontrado"}}
+    responses={404: {"Mensaje": "No encontrado"}}
 )
 
 # Routers
@@ -15,6 +15,12 @@ app.include_router(clientes.router)
 
 # Dependencia para obtener la sesión de base de datos
 def obtener_bd():
+    """
+    Función de utilidad para obtener una sesión de base de datos.
+
+    Returns:
+        Session: Una sesión de base de datos.
+    """
     db = session_local()
     try:
         yield db
@@ -23,4 +29,10 @@ def obtener_bd():
 
 @app.get("/")
 def main():
+    """
+    Redirecciona al usuario a la documentación de la API.
+
+    Returns:
+        RedirectResponse: Redirecciona al usuario a la documentación.
+    """
     return RedirectResponse(url="/docs/")
