@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from db.conexion import Base, engine, session_local
 from starlette.responses import RedirectResponse
-from routes import clientes
+from routes import clientes, usuarios, auth_usuarios
 
 # Crear todas las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
@@ -12,6 +12,8 @@ app = FastAPI(
 
 # Routers
 app.include_router(clientes.router)
+app.include_router(usuarios.router)
+app.include_router(auth_usuarios.router)
 
 # Dependencia para obtener la sesión de base de datos
 def obtener_bd():

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from db.conexion import session_local
 from db.models.clientes import Clientes
 from db.schemas.clientes import ObtenerClientes, ActualizarClientes, EliminarCliente
-from sqlalchemy.exc import IntegrityError
 
 router = APIRouter(
     prefix="/clientes",
