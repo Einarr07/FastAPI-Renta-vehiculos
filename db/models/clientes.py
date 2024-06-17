@@ -20,7 +20,7 @@ class Clientes(Base):
 
     __tablename__ = "clientes"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    cedula = Column(String(11), unique=True, nullable=False)
+    cedula = Column(String(10), unique=True, nullable=False)
     nombre = Column(String(30), nullable=False)
     apellido = Column(String(30), nullable=False)
     ciudad = Column(String(30), nullable=False)

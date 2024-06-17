@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.conexion import session_local
-from db.schemas.usuarios import ObtenerUsuarios
+from db.schemas.usuarios import ObtenerUsuarios, CrearUsuarios
 from db.models.usuarios import Usuarios
 from passlib.context import CryptContext
 
@@ -39,12 +39,13 @@ def encriptar_contraseña(contraseña: str) -> str:
     return pwd_context.hash(contraseña)
 
 @router.post("/", response_model=ObtenerUsuarios, status_code=status.HTTP_201_CREATED)
-async def crear_usuario(entrada: ObtenerUsuarios, db: Session = Depends(obtener_bd)):
+async def crear_usuario(entrada: CrearUsuarios, db: Session = Depends(obtener_bd)):
     usuario = Usuarios(
+        id=entrada.id,
         nombre=entrada.nombre,
         apellido=entrada.apellido,
         correo=entrada.correo,
-        contraseña=encriptar_contraseña(entrada.contraseña)  
+        contraseña=encriptar_contraseña(entrada.contraseña)
     )
 
     db.add(usuario)
@@ -55,5 +56,18 @@ async def crear_usuario(entrada: ObtenerUsuarios, db: Session = Depends(obtener_
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al crear usuario")
+    
+    return usuario
+
+@router.get("/", response_model=list[ObtenerUsuarios], status_code=status.HTTP_200_OK)
+async def obtener_usuarios(db: Session = Depends(obtener_bd)):
+    usuarios = db.query(Usuarios).all()
+    return usuarios
+
+@router.get("/{id}", response_model=ObtenerUsuarios, status_code=status.HTTP_200_OK)
+async def id_usuarios(id: int, db: Session = Depends(obtener_bd)):
+    usuario = db.query(Usuarios).filter_by(id=id).first()
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
     
     return usuario

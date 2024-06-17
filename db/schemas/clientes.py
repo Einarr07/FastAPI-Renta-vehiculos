@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, EmailStr
 from typing import Optional
 from datetime import datetime, date
 
@@ -19,21 +19,25 @@ class ObtenerClientes(BaseModel):
     """
 
     id: Optional[int] = None
-    cedula: str = Field(..., min_length=11, max_length=20)
+    cedula: str = Field(..., min_length=10, max_length=10)
     nombre: str
     apellido: str 
     ciudad: str 
-    correo: str 
+    correo: EmailStr 
     direccion: str 
     telefono: str 
     fecha_nacimiento: date
 
     @validator("fecha_nacimiento", pre=True, always=True)
     def analizar_fecha(cls, value):
-        if isinstance(value, str):
+        if isinstance(value, date):
+            return value
+        elif isinstance(value, str):
             return datetime.strptime(value, "%d-%m-%Y").date()
-        return value
-    
+        else:
+            raise ValueError("El formato de fecha no es válido")
+
+
     @validator("cedula")
     def longitud_cedula(cls, validar_cedula):
         return validar_cedula
@@ -63,9 +67,12 @@ class ActualizarClientes(BaseModel):
 
     @validator("fecha_nacimiento", pre=True, always=True)
     def analizar_fecha(cls, value):
-        if isinstance(value, str):
+        if isinstance(value, date):
+            return value
+        elif isinstance(value, str):
             return datetime.strptime(value, "%d-%m-%Y").date()
-        return value
+        else:
+            raise ValueError("El formato de fecha no es válido")
     
     class Config:
         from_attributes = True

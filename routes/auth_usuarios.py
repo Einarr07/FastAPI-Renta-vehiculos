@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from db.conexion import session_local
 from db.models.usuarios import Usuarios
-from pydantic import BaseModel
+from db.schemas.usuarios import CredencialesUsuario
 from passlib.context import CryptContext
 
 router = APIRouter(
@@ -11,9 +11,6 @@ router = APIRouter(
     responses={404: {"Mensaje": "No encontrado"}}
 )
 
-class CredencialesUsuario(BaseModel):
-    correo: str
-    contraseña: str
 
 def obtener_bd():
     """

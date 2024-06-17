@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from db.conexion import session_local
 from db.models.clientes import Clientes
+from db.models.usuarios import Usuarios
 from db.schemas.clientes import ObtenerClientes, ActualizarClientes, EliminarCliente
 
 router = APIRouter(
@@ -55,7 +56,6 @@ async def id_cliente(id: int, db: Session = Depends(obtener_bd)):
     
     return cliente
 
-
 @router.post("/", response_model=ObtenerClientes, status_code=status.HTTP_201_CREATED)
 async def crear_cliente(entrada: ObtenerClientes, db: Session = Depends(obtener_bd)):
     """
@@ -68,15 +68,26 @@ async def crear_cliente(entrada: ObtenerClientes, db: Session = Depends(obtener_
     Returns:
         ObtenerClientes: El cliente creado.
     """
+    # Verificar si el usuario existe
+    usuario = db.query(Usuarios).filter_by(id=entrada.cedula).first()
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario no existe")
+
+    # Verificar si el cliente ya existe
+    cliente_existente = db.query(Clientes).filter_by(cedula=entrada.cedula).first()
+    if cliente_existente:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El cliente ya existe")
+
+    # Crear cliente
     cliente = Clientes(
-        cedula = entrada.cedula,
-        nombre = entrada.nombre,
-        apellido = entrada.apellido, 
-        ciudad = entrada.ciudad, 
-        correo = entrada.correo, 
-        direccion = entrada.direccion, 
-        telefono = entrada.telefono, 
-        fecha_nacimiento = entrada.fecha_nacimiento
+        cedula=entrada.cedula,
+        nombre=entrada.nombre,
+        apellido=entrada.apellido,
+        ciudad=entrada.ciudad,
+        correo=entrada.correo,
+        direccion=entrada.direccion,
+        telefono=entrada.telefono,
+        fecha_nacimiento=entrada.fecha_nacimiento 
     )
 
     db.add(cliente)
@@ -91,7 +102,7 @@ async def crear_cliente(entrada: ObtenerClientes, db: Session = Depends(obtener_
     
     return cliente
 
-@router.put("/{id}", response_model=ObtenerClientes, status_code=status.HTTP_201_CREATED)
+@router.put("/{id}", response_model=ObtenerClientes, status_code=status.HTTP_202_ACCEPTED)
 async def actualizar_cliente(id: int, entrada: ActualizarClientes, db: Session = Depends(obtener_bd)):
     """
     Actualiza los datos de un cliente existente.
