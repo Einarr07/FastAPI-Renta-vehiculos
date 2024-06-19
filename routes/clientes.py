@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from db.conexion import session_local
 from db.models.clientes import Clientes
 from db.models.usuarios import Usuarios
-from db.schemas.clientes import ObtenerClientes, ActualizarClientes, EliminarCliente
+from db.schemas.clientes import CrearClientes, ObtenerClientes, ActualizarClientes, EliminarCliente
 
 router = APIRouter(
     prefix="/clientes",
@@ -24,6 +24,45 @@ def obtener_bd():
         yield db
     finally:
         db.close()
+
+@router.post("/", response_model=ObtenerClientes, status_code=status.HTTP_201_CREATED)
+async def crear_cliente(entrada: CrearClientes, db: Session = Depends(obtener_bd)):
+    
+    # Verificar si el usuario existe
+    usuario = db.query(Usuarios).filter_by(id=entrada.cedula).first()
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario no existe")
+
+    # Verificar si el cliente ya existe
+    cliente_existente = db.query(Clientes).filter_by(cedula=entrada.cedula).first()
+    if cliente_existente:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El cliente ya existe")
+
+    # Crear cliente
+    cliente = Clientes(
+        cedula=str(entrada.cedula),  # Convertir la cédula a str
+        nombre=entrada.nombre,
+        apellido=entrada.apellido,
+        ciudad=entrada.ciudad,
+        correo=entrada.correo,
+        direccion=entrada.direccion,
+        telefono=entrada.telefono,
+        fecha_nacimiento=entrada.fecha_nacimiento 
+    )
+
+    db.add(cliente)
+
+    try:
+        db.commit()
+        db.refresh(cliente)
+    except IntegrityError as e:
+        error_msg = str(e)
+        print(f"Error de integridad: {error_msg}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al crear cliente")
+    
+    return cliente
+
+
 
 @router.get("/", response_model=list[ObtenerClientes], status_code=status.HTTP_200_OK)
 async def obtener_clientes(db: Session = Depends(obtener_bd)):
@@ -53,52 +92,6 @@ async def id_cliente(id: int, db: Session = Depends(obtener_bd)):
     cliente = db.query(Clientes).filter_by(id=id).first()
     if not cliente:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente no encontrado")
-    
-    return cliente
-
-@router.post("/", response_model=ObtenerClientes, status_code=status.HTTP_201_CREATED)
-async def crear_cliente(entrada: ObtenerClientes, db: Session = Depends(obtener_bd)):
-    """
-    Crea un nuevo cliente.
-
-    Args:
-        entrada (ObtenerClientes): Datos del nuevo cliente.
-        db (Session, optional): La sesión de base de datos. Defaults to Depends(obtener_bd).
-
-    Returns:
-        ObtenerClientes: El cliente creado.
-    """
-    # Verificar si el usuario existe
-    usuario = db.query(Usuarios).filter_by(id=entrada.cedula).first()
-    if not usuario:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El usuario no existe")
-
-    # Verificar si el cliente ya existe
-    cliente_existente = db.query(Clientes).filter_by(cedula=entrada.cedula).first()
-    if cliente_existente:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El cliente ya existe")
-
-    # Crear cliente
-    cliente = Clientes(
-        cedula=entrada.cedula,
-        nombre=entrada.nombre,
-        apellido=entrada.apellido,
-        ciudad=entrada.ciudad,
-        correo=entrada.correo,
-        direccion=entrada.direccion,
-        telefono=entrada.telefono,
-        fecha_nacimiento=entrada.fecha_nacimiento 
-    )
-
-    db.add(cliente)
-
-    try:
-        db.commit()
-        db.refresh(cliente)
-    except IntegrityError as e:
-        error_msg = str(e)
-        print(f"Error de integridad: {error_msg}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al crear cliente")
     
     return cliente
 

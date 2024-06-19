@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, BigInteger
+from sqlalchemy.orm import relationship
 from ..conexion import Base
 
 class Usuarios(Base):
@@ -8,3 +9,5 @@ class Usuarios(Base):
     apellido = Column(String(30), nullable=False)
     correo = Column(String(50), unique=True, nullable=False)
     contraseña = Column(String(100), nullable=False)
+
+    clientes = relationship("Clientes", back_populates="usuarios")

@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, validator, EmailStr
 from typing import Optional
 from datetime import datetime, date
 
-class ObtenerClientes(BaseModel):
+class CrearClientes(BaseModel):
     """
     Modelo Pydantic para obtener información de clientes.
 
@@ -40,7 +40,50 @@ class ObtenerClientes(BaseModel):
 
     @validator("cedula")
     def longitud_cedula(cls, validar_cedula):
-        return validar_cedula
+        return str(validar_cedula)
+
+    class Config:
+        from_attributes = True
+
+class ObtenerClientes(BaseModel):
+    """
+    Modelo Pydantic para obtener información de clientes.
+
+    Attributes:
+        id (Optional[int]): Identificador único de cada cliente.
+        cedula (str): Número de cédula del cliente.
+        nombre (str): Nombre del cliente.
+        apellido (str): Apellido del cliente.
+        ciudad (str): Ciudad de residencia del cliente.
+        correo (str): Dirección de correo electrónico del cliente.
+        direccion (str): Dirección de residencia del cliente.
+        telefono (str): Número de teléfono del cliente.
+        fecha_nacimiento (date): Fecha de nacimiento del cliente.
+    """
+
+    id: Optional[int] = None
+    cedula: int
+    nombre: str
+    apellido: str 
+    ciudad: str 
+    correo: EmailStr 
+    direccion: str 
+    telefono: str 
+    fecha_nacimiento: date
+
+    @validator("fecha_nacimiento", pre=True, always=True)
+    def analizar_fecha(cls, value):
+        if isinstance(value, date):
+            return value
+        elif isinstance(value, str):
+            return datetime.strptime(value, "%d-%m-%Y").date()
+        else:
+            raise ValueError("El formato de fecha no es válido")
+
+
+    @validator("cedula")
+    def longitud_cedula(cls, validar_cedula):
+        return str(validar_cedula)
 
     class Config:
         from_attributes = True
