@@ -40,7 +40,7 @@ async def crear_cliente(entrada: CrearClientes, db: Session = Depends(obtener_bd
 
     # Crear cliente
     cliente = Clientes(
-        cedula=str(entrada.cedula),  # Convertir la cédula a str
+        cedula=entrada.cedula,
         nombre=entrada.nombre,
         apellido=entrada.apellido,
         ciudad=entrada.ciudad,
